@@ -1,0 +1,23 @@
+# elasitc load balancer
+
+- there are three elastic load balancers
+  - network
+    - listeners
+    - target groups to route traffic
+    - is for TCP/UDP is good for high network throughput e.g. video games
+  - application
+    - listeners
+    - rules
+    - target groups to route traffic
+    - for HTTP(S) traffic and is good for web applications
+    - you can attach web application firewall (WAF)
+    - sticky session can be enabled and sessions are remembered via cookie
+  - classic
+    - listeners
+    - EC2 instances are directly used as the target
+    - is legacy and is recommended to use network or application load balancers
+    - sticky session can be enabled and sessions are remembered via cookie
+  - elastic load balancers cannot go cross region - you must create one per region
+  - use X-Forwarded-For (XFF) to get the original IP of incoming traffic passing through ELB
+  - you can attach amazon certificate manager SSL to any of the elastic load balancer for SSL
+  - ALB has advanced requrest routing rules where you can route based on subdomain header, path and other HTTP(S) information

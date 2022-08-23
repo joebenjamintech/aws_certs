@@ -1,0 +1,30 @@
+# step functions
+
+- coordinate multiple AWS services into serverless workflows using **state machines**
+- a **state machine** is an abstract model which decides how one state moves to another based on a series of conditions **think of state machine like a flowchart**
+- automatically triggers and tracks each step, and retries when there are errors, so your application executes in order and as expected, every time
+- **amazon state language** is how you define all your states and is written in JSON
+- there are two types of state machine available
+  - **standard** - general purpose, long workloads
+  - **express** streaming data, short workloads
+- use cases for step functions
+  - manage a batch job, fargate or ECS container
+  - sequential batch processing
+  - creating a pipeline to transcode media files
+  - transferring data records, by performing operations on each record queued up via SQS
+  - sequence steps of machine language workloads
+  - coordinate extract, transform and load (ETL) jobs
+- **the type of step function states**
+  - **pass state**
+    - passes its input to its output, without performing work (dummy/mock)
+    - pass states are useful when constructing and debugging state machines
+  - **task state** - represents a single unit of work performed by a state machine
+    - lambda - triggers a lambda function
+    - activity - the work is performed by a worker that can be hosted on anywhere e.g. EC2, ECS, mobile phones
+    - supported AWS services pass parameters to the API of an AWS service
+  - **choice state** adds branching logic to a state machine
+  - **wait state** delays the state machine from continuing for a specified time
+  - **succeed state** stops an execution successfully
+  - **fail state** stops the execution of the state machine and marks it as a failure
+  - **parallel state** can be used to create parallel branches of execution in your state machine. the state machine does not move forward until both states complete
+  - **map state** can be used to run a set of steps for each element of an input array

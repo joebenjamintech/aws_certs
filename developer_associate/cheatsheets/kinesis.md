@@ -1,0 +1,25 @@
+# kinesis
+
+- the AWS solution for collecting, processing and analyzing streaming data in the cloud --- when you need **real time** think Kinesis
+- 4 types of streams
+  - kinesis data streams
+    - pay per shard that is running
+    - data can persist within the stream
+    - data is orderedc and every consumer keeps its own position
+    - consumers have to be manually added (coded)
+    - data persist for 24 hours (default) to 168 hours
+  - kinesis firehose
+    - pay for only the data ingested
+    - data immediately dissappers once processed
+    - consumer of choice is from a predefined set of services
+      - S3
+      - Redshift
+      - Elasticsearch
+      - Splunk
+  - kinesis data analytics
+    - alows you to perform queries in real time
+    - needs a kinesis data stream/firehouse as input and output
+  - kinesis video analytics
+    - securely ingests and stores video and audio encoded data to consumers such as SageMaker, Rekognition or other servics to apply Machine learning and video processing
+  - KPL **Kinesis Producer Library** is a Java library to write data to a stream
+  - you can write data to stream using AWS SDK, but KPL is more efficient

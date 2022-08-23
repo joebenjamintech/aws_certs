@@ -1,0 +1,48 @@
+# cloudformation
+
+- when being asked to **automate** the provisioning of resources think cloudformation
+- when IAC is mentioned, think cloudformation
+- can be written in either JSON or YAML
+- when cloudformation encountes an error it will rollback with ROLLBACK_IN_PROGRESS
+- cloudformation templates larger than 51,200 bytes (0.05 MB) are too large to upload directly, and must be imported into cloudformation via an S3 bucket
+- **nested stacks** helps you break up your cloudformation template into smaller reusable templates that can be composed into larger templates
+- **at least one resource** under resources: must be defined for a cloudformation template **to be valid**
+- cloudformation **template sections**
+  - **metadata** extra information about your template
+  - **description** a description of what the template is suppose to do
+  - **parameters** is how you get user inputs into templates
+  - **transforms** applies macros (like applying a mod which change the anatomy to be custom)
+  - **outputs** are values you can use to import into othere stacks
+  - **mappings** maps key to values, just like a lookup table
+  - **resources** defines the resources you want to provision, **at least one resource is required**
+  - **conditions** are whether resources are created or properties are assigned
+- stack updates can be performed two diff ways
+  - direct updates
+    - you directly update the stack
+    - you submit changes and AWS cloudformation immediately deploys them
+  - executing change sets
+    - you can preview the changes to cloudformation will make to your stack (change set)
+    - then decide whether you want to apply those changes
+  - stack updates will change state of your resource based on circumstances:
+    - **update with no interruption** updates the resource **without disrupting** operation and **without changing** the resource's physical ID
+    - **updates with some interruption** updates the resource **with some interruption** and **retains** the physical ID
+    - **replacement** recreates the resource during an update, also generates new physical ID
+    - you can use a StackPolicy to prevent stack updates on resources to prevent data loss or interruption to services
+  - **drift detection** feature lets cloudformation tell you when your expected config has changed to due manual overrides e.g. A CFN creates a SG but a developer deletes it
+- **rollbacks** occur when a cloudformation encounters an error when you create, update or destroy a stack
+  - when a rollbak is in progress, you will see ROLLBACK_IN_PROGRESS
+  - when a rollback succeeds, you will see UPDATE_ROLLBACK_COMPLETE
+  - when a rollback fails, you will see UPDATE_ROLLBACK_FAILED
+- pseudo parameters are predefined parameters e.g. !Ref AWS:Region return us-east-1
+- resource attributes
+  - CreationPolicy - prevent its status from reaching create complete until AWS cloudformation receives a specified number of success signals or the timeout period is exceeded
+  - **DeletionPolicy** - reserve or (in some cases) backup a resource when its stack is deleted **Delete, Retain** or **Snapshot**
+  - **UpdatePolicy** - how to handle an update for ASG, ElasticCache, Domain or Lambda Alias
+  - **UpdateReplacePolicy** - to retain or (in some cases) backup the existing physical instance of a resource when it is replaced during a stack update operation. **Delete, Retain** or **Snapshot**
+  - **DependsOn** that resource is created only after the creation of the resource specified in the DependsOn attribute
+- intrinsic functions allow you to assign properties that are not avail during runtime
+  - **Ref** returns the value of the specified parameters or resource
+  - **Fn:GetAttr** returns the value of an attribute from a resource in a template
+- aws cloudformatione **create-stack** - cli command to create a stack
+- aws cloudformatione **update-stack** - cli command to update a stack
+- **serverless application model (SAM)** is an extension of cloudformation that lets you define serverless applications

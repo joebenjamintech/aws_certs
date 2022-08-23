@@ -1,0 +1,25 @@
+# SQS
+
+- **SQS** is a queuing services using messages with a queue. think sidekiq or rabbitmq
+- used for application integration, it lets decouled services and apps to talk to each other
+- to read SQS - need to pull the queue using the AWS SDK. SQS is **not pushed based**
+- SQS supports both **Standard** and **FIFO** queues
+- **standard**
+  - allows nearly unlimited messages per second
+  - does not guarantee order of delivery
+  - always delivers at least once
+  - you must protect against duplicate messages being processed
+- **FIFO**
+  - maintains the order of messages with a 300 limit
+- there are two kinds of polling
+  - **Short Polling (default)**
+    - returns messages immediately, even if the message queue being polled is empty
+  - **Long Polling**
+    - waits until the message arrives in the queue, or the long poll timeout expires
+    - majority of cases, long polling is prefereed over short polling
+  - **visibility time-out** is the period os time the messages are invisible in the SQS queue
+    - message will be deleted from queue after a job has processed (before visibility timeout expires)
+    - if visibility timeout expires, than a job will become visible to the queue
+    - the default visibility timeout is 30 seconds. timeout can be 0 seconds to a max of 12 hours
+  - SQS can retain messages from 60 seconds to 14 days and by default is 4 days
+  - message size between 1 byte to 256kb, extended client library for Java can increase to 2GB

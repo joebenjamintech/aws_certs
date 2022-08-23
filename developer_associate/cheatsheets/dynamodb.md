@@ -1,0 +1,124 @@
+# dynamodb
+
+- a fully managed **NoSQL** key/value and document database
+- is suited for workloads with any amounts of data that require predictable read and write performance and automatic scaling from large to small and everywhere in between
+- scales up and down to support whatever read and write capacity you specify per second in provisioned capacity mode or you can set it to on-demand mode and there is little to no capacity planning
+- can be set to support **eventually consistent reads (default)** and **strongly consistent reads** on a per-call basis
+- **eventually consistent reads**
+  - data is returned immediately but data can be inconsistent
+  - copies of data will be generally consistent in 1 second
+- **strongly consistent reads**
+  - will always read from the leader partition since it always has an up-to-date copy
+  - data will never be inconsistent but latency may be higher
+  - copies of data will be consistent with a guarantee of 1 second
+- stores data on SSD drives across AZs
+- most common datatypes are B(binary), N(number), S(string)
+- table consist of **items** and items consists of **attributes** (columns)
+- a **partition** is when dynamodb slices your table up into smaller chunks of data, this speeds up reads for very large tables
+- automatically create partitions for:
+  - every 10GB of data
+  - when you exceed RCUs (3000) or WCUs(1000) limits for a single partition
+  - when dynamodb sees a pattern of a hot partition, it will split the partition in an attempt to fix the issue
+- will try to evenly split the RCUs and WCUs across partitions
+- primary keys define where and how your data will be stored in partitions
+- primary keys come in two types
+  - **simple** primiary key (using only a partition key)
+  - **composite** primary key (using both a partition and sort key)
+- partition key is also know as **hash**
+- sort key is also known as **range**
+- when creating a simple primary key, the partition key value must be unique
+- when using sort key, records on the partition are logically group together in ascending order
+- **dynamodb global tables** provide a fully managed solution for deploying multi-region, multi-master databases
+- supports transactions via the **TransactWriteItems** and **TransactGetItems**
+- **Transactions** let you query multiple tables at once and is an **all-or-nothing** approach (all API calls must succeed)
+- **dynamodb streams** allows you to setup a lambda function triggered every time data is modified in a table to react to changes
+  - streams do not consume RCUs
+- has two types of indexes
+  - **LSI** - local secondary index
+    - supports strongly or eventually consistent reads
+    - can only be created with initial table (cannot be modified and cannot be deleted unless also deleting the table)
+    - only composite
+    - 10GB or less per partition
+    - share capacity units with base table
+    - must share partition key (PK) with base table
+  - **GSI** - global secondary index (cannot provide strong consistent)
+    - only evnetual consistentcy reads
+    - can create, modify or delete at anytime
+    - simple and compositecan
+    - can have whatever attributes as Partition key (PK) or sort key (SK)
+    - no size restriction per partition
+    - has its own capacity settings
+- **scan**
+  - your table(s) should be designed in such a way that your workload primary access patters **do not use scans**
+  - overall, scans should be needed sparingly. e.g. infrequent report
+  - by default, returns all attributes for every item (use **ProjectExpression** to limit)
+  - are sequential, you can speed up a scan through parallel scans using **segments** and **total segments**
+  - can be slow, especially with very large tables and can easily consume your provisioned throughput
+  - are one of the most expensive ways to access data
+- **query**
+  - find item based on primary key values
+  - table must have a composite key in order to be able to query
+  - by default queries are eventually consistent (use **ConsistentRead True** to change to Strongly Consistent)
+  - by default, returns all attributes for each item found by a query (use **ProjectExpression** to limit)
+  - by default is sorted ascending (use **ScanIndexForward to False** to reverse order to descending)
+- has two capacity modes **provisioned** and **on-demand**
+  - **provisioned throughput capacity**
+    - the maximum amount of capacity your application is allowed **to read or write per second** from a table or index
+    - provisioned is suited for predictable or steady state workloads
+    - **RCU** is read capacity unit
+    - **WCU** is write capacity unit
+    - you should enable auto scaling with provisioned capacity mode
+      - you set the floor and ceiling for the capacity you with the table to support
+      - will automatically add and remove capacity to between these values on your behalf and throttle calls that go above the ceiling for too long
+    - if you go beyond your provisioned capacity, you will get an Exception **ProvisionedThroughputExceededException** (throttling)
+    - **throttling** is when requests are blocked due to read or write frequency higher than set thresholds. e.g. exceeding set provisioned capacity, partitions splitting, table/index capacity mismatch
+  - **on-demand capacity**
+    - pay per requests, only pay for what you use
+    - suited for new and unpredictable workoads
+    - the throughput is only limited by the default upper limits for a table (40K RCUs and 40K WCUs)
+    - throttling can occur is you exceed double your previous peak capacity (high water mark) within 30 minutes. e.g. if you previously peaked to a max of 30,000 ops/sec, you could not peak immediately to 90,000 ops/sec but you could to 60,000 ops/sec
+    - since there is no hard limit, could become very expensive based on emerging scenarios
+- **calculating reads (RCU)**
+  - a read capacity unit represents: one strongly consistent read per second, or two eventually consistent reads per second, for an item up to 4KB in size
+  - how to calculate RCUs for **strong**
+    - round data up to the nearest 4
+    - divide data by 4
+    - times by number of reads
+  - how to calculate RCUs for **eventual**
+    - round data up to the nearest 4
+    - divide data by 4
+    - times by number of reads
+    - divide final number by 2
+    - round up to the nearest hold number
+- **calculating writes (WCU)**
+  - a write capacity unit represents: one write per second for an item up to 1KB
+  - how to calculate writes
+    - round data up to the nearest 1
+    - times by number of writes
+- **dynamodb accelerator (DAX)**
+  - a fully managed in-memory write through cache for dynamodb that runs in a cluster
+    - reads are eventually consistent
+    - incoming requests are evenly distributed across all of the nodes in the cluster
+    - DAX can reduce read response times to microseconds
+    - **DAX is ideal for:**
+      - fastest response times possible
+      - apps that read a small number of items more frequently
+      - apps that are **read intensive**
+    - **DAX is not ideal for:**
+      - apps that require strongly consistent reads
+      - apps that do not require microsecond read response times
+      - apps that are **write intensive** or that do not perform much read activity
+      - if you don't need DAX, consider using ElastiCache
+- **dynamodb api commands**
+  - **get-item** returns a set of attributes for the items with the given primary key, if no matching items, then it does not return any data and there will be no item element in the response
+  - **put-item** creates a new item, or replaces an old item with a new item. if an item that has the same primary key as the new item already exists in the specified table, the new item completely replaces the existing item
+  - **update-item** edits an existing item's attributes, or adds a new item to the table if it does not already exists
+  - **batch-get-item** returns the attributes of one or more items from one or more tables. you identify requested items by primary key. a single operation can retrieve up to 16 MB of data, which can contain as many as 100 items
+  - **batch-write-item** puts or deletes multiple items in one or more table. can write up to 16 MB of data which can comprise as many as 25 put or delete requests. individual items to be written can be as large as 400 KB
+  - **create-table** adds a new table to your account, table names must be unique within each region
+  - **update-table** modifies the provisioned throughput settings, global secondary indexes, or dynamodb streams settings for a given table
+  - **delete-table** operation deletes a table and all of its items
+  - **transact-get-items** is a synchronous operation that automatically retrieves multiple items from one or more tables (but not from indexes) in a single account or region. call can contain up to 25 objects. the aggregate size of the items in the transaction cannot exceed 4 MB
+  - **transact-write-items** a synchronous write operation that groups up to 25 action requests. these actions can target items in different tables, but not in different AWS accounts or regions, and no two actions can target the same item
+  - **query** finds items based on primary key values. you can query table or secondary index that has a composite primary key
+  - **scan** returns one or more items and item attributes by accessing every item in a table or a secondary index
