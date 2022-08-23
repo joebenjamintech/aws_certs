@@ -1,0 +1,25 @@
+# elastic beanstalk
+
+- handles the deployment, from capacity provisioning, load balancing, auto-scaling to application health monitoring
+- when you run a web-application but you don't want to have to think about the underlying infrastructure
+- it cost nothing to use elastic beanstalk, only pay for the resources it provisions (RDS, load balancer, EC2, etc)
+- recommended for tests or development apps, not recommended for production
+- you can run containers on Elastic beanstalk either in single-container or multi-container, these containers are running on ECS instead of EC2
+- you can launch either a **web environment** or a **worker environment**
+  - *web environment** comes in two types **single-instance** or **load balanced**
+    - **single-instance** env launches a single EC2 instance, an elastic IP is assigned to EC2
+    - **load balanced** env launch EC2s behind a elastic load balancer managed by auto scaling groups
+  - **worker environment** creates an SQS queue, install the SQS daemon on the EC2 instances, and has ASG scaling policy which will add or remove instances based on queue size
+- has the following **deployment policies**
+  - **all at once** takes all servers out-of-service, applies changes, puts servers back-in-service, Fast, has downtime
+  - **rolling** updates servers in batches, reduced capacity based on batch size
+    - requires an ELB, so cannot be used with a single-instance web envs
+  - **rolling w/ additional batch** adds new servers in batches to replace old, never reduces capacity
+    - requires an ELB, so cannot be used with a single-instance web envs
+  - **immutable** creates the same amount of servers, and switches all at once, removing old servers
+  - in-place deployment is when deployment occurs within the environment
+  - blue/green is when deployment swaps environments (outside an environment), when you have external resources such as RDS which cannot be destroyed its suited for blue/green
+  - .ebextensions is a folder which contain on config files
+  - with elastic beanstalk, you can provide a custom image which can improve provisioning times
+  - if you let elastic beanstalk create the RDS instance, that means when you delete your env, it will delete the database. this setup is only intended for development and test environments
+  - Dockerrun.aws.json is similar to an ECS task definition fils and defines multi container config
